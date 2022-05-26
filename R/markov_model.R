@@ -1,15 +1,15 @@
 # Markov model for costs and QALY losses
 
-@References: 
-Analysis based on R code from https://gist.github.com/tristansnowsill
-Kenya life expectancy table: https://apps.who.int/gho/data/view.searo.60850?lang=en
-Kenya productivity losses dues to COVID-19 from Kenya National Bureau of Statistics: https://www.knbs.or.ke/?s=COVID-19 
+# References: 
+# Analysis based on R code from https://gist.github.com/tristansnowsill
+# Kenya life expectancy table: https://apps.who.int/gho/data/view.searo.60850?lang=en
+# Kenya productivity losses dues to COVID-19 from Kenya National Bureau of Statistics: https://www.knbs.or.ke/?s=COVID-19 
 
-n_t <- 20
-n_s <- 3
+n_t <- 25
+n_s <- 4
 n_c <- 1000
 
-v_state_names <- c("Long COVID", "Recovery", "Dead")
+v_state_names <- c("Long COVID", "Recovery", "COVID-19", "Dead")
 
 trans_mat <- array(NA_real_,
                    dim = c(n_s, n_s, n_t),
