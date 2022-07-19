@@ -2,7 +2,7 @@
 
 This project aims to develop a modelling approach to estimate QALY losses, DALYs, and productivity losses associated with long COVID in the Kenya population.
 
-Follow the steps below to run a prototype of the model:
+Follow the steps below to run the model prototype:
 
 1. Download the R project by clicking on Code on the top right -> Download ZIP
 2. Unzip the file and save it on your computer.
