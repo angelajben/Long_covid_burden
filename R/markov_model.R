@@ -5,17 +5,17 @@
 # Kenya life expectancy table: https://apps.who.int/gho/data/view.searo.60850?lang=en
 # Kenya productivity losses dues to COVID-19 from Kenya National Bureau of Statistics: https://www.knbs.or.ke/?s=COVID-19 
 
-n_t <- 40   # number of cycles. 1 cycle = 3 months (12 weeks) in 10 years
-n_s <- 9    # number of health states
-n_c <- 1000 # cohort size
+n_cy <- 40   # number of cycles. 1 cycle = 3 months (12 weeks) = 4 cycles per year in 10 years
+n_hs <- 9    # number of health states
+n_co <- 1000 # cohort size
 
-v_state_names <- c("asymp", "mild.mod_COV","sev_COV","crit_COV","mild_LCOV","mod_LCOV","sev_LCOV","Recovery","Death")
+v_hs_names <- c("asymp", "mild.mod_COV","sev_COV","crit_COV","mild_LCOV","mod_LCOV","sev_LCOV","Recovery","Death")
 
 trans_mat <- array(NA_real_,
-                   dim = c(n_s, n_s, n_t),
-                   dimnames = list(from  = v_state_names,
-                                   to    = v_state_names,
-                                   cycle = 1:n_t))
+                   dim = c(n_hs, n_hs, n_cy),
+                   dimnames = list(from  = v_hs_names,
+                                   to    = v_hs_names,
+                                   cycle = 1:n_cy))
 # from asymptomatic to other health states
 trans_mat[1, 1, ] <- 0
 trans_mat[1, 2, ] <- 0
@@ -112,38 +112,39 @@ trans_mat[6, 8, ] <- 1 - apply(trans_mat[6, , ], 2, sum, na.rm =TRUE)
 trans_mat[7, 8, ] <- 1 - apply(trans_mat[7, , ], 2, sum, na.rm =TRUE)
 trans_mat[8, 8, ] <- 1 - apply(trans_mat[8, , ], 2, sum, na.rm =TRUE)
 
-state_membership <- array(NA_real_,
-                          dim = c(n_t, n_s),
-                          dimnames = list(cycle = 1:n_t,
-                                          state = v_state_names))
+hs_membership <- array(NA_real_,
+                          dim = c(n_cy, n_hs),
+                          dimnames = list(cycle = 1:n_cy,
+                                          state = v_hs_names))
 
-state_membership[1, ] <- c(n_c, 0, 0, 0, 0, 0, 0, 0, 0)
+hs_membership[1, ] <- c(n_co*0.3, n_co*0.6, n_co*0.09, n_co*0.01, 0, 0, 0, 0, 0)
+sum(hs_membership[1, ])
 
-for (i in 2:n_t) {
-  state_membership[i, ] <- state_membership[i - 1, ] %*% trans_mat[, , i - 1]
+for (i in 2:n_cy) {
+  hs_membership[i, ] <- hs_membership[i - 1, ] %*% trans_mat[, , i - 1]
 }
 
-# plot state_membership
-matplot(1:n_t, state_membership)
-matplot(1:n_t, state_membership, type = 'l', pch = 15:18, col = c(1:4, 6))
-legend("topright", legend =  v_state_names, pch = 15:18, col = c(1:4, 6), cex = 0.5)
+# plot hs_membership
+matplot(1:n_cy, hs_membership)
+matplot(1:n_cy, hs_membership, type = 'l', pch = 15:18, col = c(1:4, 6))
+legend("topright", legend =  v_hs_names, pch = 15:18, col = c(1:4, 6), cex = 0.5)
 
 
 payoffs <- array(NA_real_,
-                 dim = c(n_s, 2, n_t),
-                 dimnames = list(state  = v_state_names,
+                 dim = c(n_hs, 2, n_cy),
+                 dimnames = list(state  = v_hs_names,
                                  payoff = c("Cost Productivity losses", "QALY"),
-                                 cycle  = 1:n_t))
+                                 cycle  = 1:n_cy))
 
 payoffs[, ,  1:40] <- c(10,  800, 1500, 3000, 800, 1500, 3000, 0, 0, 0.95, 0.65, 0.45, 0.10, 0.65, 0.45, 0.10, 0.95, 0)
 
 payoff_trace <- array(NA_real_,
-                      dim = c(n_t, 2),
-                      dimnames = list(cycle  = 1:n_t,
+                      dim = c(n_cy, 2),
+                      dimnames = list(cycle  = 1:n_cy,
                                       payoff = c("Cost Productivity losses", "QALY")))
 
-for (i in 1:n_t) {
-  payoff_trace[i, ] <- state_membership[i, ] %*% payoffs[, , i]
+for (i in 1:n_cy) {
+  payoff_trace[i, ] <- hs_membership[i, ] %*% payoffs[, , i]
 }
 
 colSums(payoff_trace) / n_c
